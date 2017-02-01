@@ -9,10 +9,24 @@ abstract class TextBlock extends SerializableSegment {
   const TextBlock();
 }
 
+abstract class TextSpan {
+  const TextSpan();
+}
+
+class Word extends TextSpan {
+  const Word(this.value);
+  final Word value;
+}
+
+class Interruption extends TextSpan {
+  const Interruption(this.value);
+  final SerializableSegment value;
+}
+
 class Paragraph extends TextBlock {
   const Paragraph(this.body, { this.indentLevel: 0, this.bulleted: false });
 
-  final String body;
+  final List<TextSpan> body;
   final int indentLevel;
   final bool bulleted;
 
