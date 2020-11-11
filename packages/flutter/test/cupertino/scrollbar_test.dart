@@ -678,7 +678,8 @@ void main() {
     await tester.pump();
 
     int hapticFeedbackCalls = 0;
-    SystemChannels.platform.setMockMethodCallHandler((MethodCall methodCall) async {
+    tester.binding.defaultBinaryMessenger.setMockMessageHandler(SystemChannels.platform.name, (ByteData? data) async {
+      final MethodCall methodCall = SystemChannels.platform.codec.decodeMethodCall(data);
       if (methodCall.method == 'HapticFeedback.vibrate') {
         hapticFeedbackCalls++;
       }

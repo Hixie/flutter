@@ -12,6 +12,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart' show TestDefaultBinaryMessengerBinding;
+
 import '../flutter_test_alternative.dart';
 
 class TestServiceExtensionsBinding extends BindingBase
@@ -21,7 +23,8 @@ class TestServiceExtensionsBinding extends BindingBase
        PaintingBinding,
        SemanticsBinding,
        RendererBinding,
-       WidgetsBinding {
+       WidgetsBinding,
+       TestDefaultBinaryMessengerBinding {
 
   final Map<String, ServiceExtensionCallback> extensions = <String, ServiceExtensionCallback>{};
 

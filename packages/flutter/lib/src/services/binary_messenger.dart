@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
-import 'binding.dart';
 
 /// A function which takes a platform message and asynchronously returns an encoded response.
 typedef MessageHandler = Future<ByteData?>? Function(ByteData? message);
@@ -19,12 +16,20 @@ abstract class BinaryMessenger {
   /// const constructors so that they can be used in const expressions.
   const BinaryMessenger();
 
-  /// Calls the handler registered for the given channel.
+  /// Queues a message.
   ///
-  /// Typically called by [ServicesBinding] to handle platform messages received
-  /// from [dart:ui.PlatformDispatcher.onPlatformMessage].
+  /// The returned future completes immediately.
+  ///
+  /// To send a message from the framework to plugins, it is more efficient to
+  /// call `ServicesBinding.instance.channelBuffers.push` directly.
+  ///
+  /// In tests, consider using [WidgetTester.sendMockPlatformMessage].
   ///
   /// To register a handler for a given message channel, see [setMessageHandler].
+  // TODO(ianh): deprecate this method: @Deprecated(
+  //   'Instead of calling this method, use ServicesBinding.instance.channelBuffers.push. '
+  //   'This feature was deprecated after v000.'
+  // )
   Future<void> handlePlatformMessage(String channel, ByteData? data, ui.PlatformMessageResponseCallback? callback);
 
   /// Send a binary message to the platform plugins on the given channel.
@@ -42,38 +47,4 @@ abstract class BinaryMessenger {
   ///
   /// The handler's return value, if non-null, is sent as a response, unencoded.
   void setMessageHandler(String channel, MessageHandler? handler);
-
-  /// Returns true if the `handler` argument matches the `handler` previously
-  /// passed to [setMessageHandler].
-  ///
-  /// This method is useful for tests or test harnesses that want to assert the
-  /// handler for the specified channel has not been altered by a previous test.
-  ///
-  /// Passing null for the `handler` returns true if the handler for the
-  /// `channel` is not set.
-  bool checkMessageHandler(String channel, MessageHandler? handler);
-
-  /// Set a mock callback for intercepting messages from the [send] method on
-  /// this class, on the given channel, without decoding them.
-  ///
-  /// The given callback will replace the currently registered mock callback for
-  /// that channel, if any. To remove the mock handler, pass null as the
-  /// `handler` argument.
-  ///
-  /// The handler's return value, if non-null, is used as a response, unencoded.
-  ///
-  /// This is intended for testing. Messages intercepted in this manner are not
-  /// sent to platform plugins.
-  void setMockMessageHandler(String channel, MessageHandler? handler);
-
-  /// Returns true if the `handler` argument matches the `handler` previously
-  /// passed to [setMockMessageHandler].
-  ///
-  /// This method is useful for tests or test harnesses that want to assert the
-  /// mock handler for the specified channel has not been altered by a previous
-  /// test.
-  ///
-  /// Passing null for the `handler` returns true if the handler for the
-  /// `channel` is not set.
-  bool checkMockMessageHandler(String channel, MessageHandler? handler);
 }

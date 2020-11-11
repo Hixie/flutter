@@ -5,9 +5,12 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
+import 'package:test_api/test_api.dart' as test_package; // ignore: deprecated_member_use
 
+import 'binding.dart' show TestDefaultBinaryMessengerBinding;
+import 'deprecated.dart';
+import 'test_async_utils.dart';
 
 export 'package:flutter/services.dart' show TextEditingValue, TextInputAction;
 
@@ -33,9 +36,6 @@ class TestTextInput {
   /// [updateEditingValue], [enterText], or [receiveAction]), the keyboard must
   /// first be requested, e.g. using [WidgetTester.showKeyboard].
   final VoidCallback? onCleared;
-
-  /// The messenger which sends the bytes for this channel, not null.
-  BinaryMessenger get _binaryMessenger => ServicesBinding.instance!.defaultBinaryMessenger;
 
   /// Resets any internal state of this object and calls [register].
   ///
@@ -130,22 +130,38 @@ class TestTextInput {
     _isVisible = false;
   }
 
-  /// Simulates the user typing the given text.
+  /// Simulates the user changing the text of the focused text field, and resets
+  /// the selection.
+  ///
+  /// To update the UI under test after this method is invoked, use
+  /// [WidgetTester.pump].
+  ///
+  /// See also:
+  ///
+  ///  * [updateEditingValue], which takes a [TextEditingValue] so that one can
+  ///    also change the selection.
   void enterText(String text) {
     assert(isRegistered);
-    updateEditingValue(TextEditingValue(
-      text: text,
-    ));
+    updateEditingValue(TextEditingValue(text: text));
   }
 
-  /// Simulates the user changing the [TextEditingValue] to the given value.
+  /// Simulates the user changing the text and selection of the focused text
+  /// field.
+  ///
+  /// To update the UI under test after this method is invoked, use
+  /// [WidgetTester.pump].
+  ///
+  /// See also:
+  ///
+  ///  * [enterText], which is similar but takes only a String and resets the
+  ///    selection.
   void updateEditingValue(TextEditingValue value) {
     assert(isRegistered);
     // Not using the `expect` function because in the case of a FlutterDriver
     // test this code does not run in a package:test test zone.
     if (_client == 0)
-      throw TestFailure('Tried to use TestTextInput with no keyboard attached. You must use WidgetTester.showKeyboard() first.');
-    _binaryMessenger.handlePlatformMessage(
+      throw test_package.TestFailure('Tried to use TestTextInput with no keyboard attached. You must use WidgetTester.showKeyboard() first.');
+    TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger.handlePlatformMessage(
       SystemChannels.textInput.name,
       SystemChannels.textInput.codec.encodeMethodCall(
         MethodCall(
@@ -153,7 +169,7 @@ class TestTextInput {
           <dynamic>[_client, value.toJSON()],
         ),
       ),
-      (ByteData? data) { /* response from framework is discarded */ },
+      (ByteData? data) { /* ignored */ },
     );
   }
 
@@ -165,13 +181,10 @@ class TestTextInput {
     return TestAsyncUtils.guard(() {
       // Not using the `expect` function because in the case of a FlutterDriver
       // test this code does not run in a package:test test zone.
-      if (_client == 0) {
-        throw TestFailure('Tried to use TestTextInput with no keyboard attached. You must use WidgetTester.showKeyboard() first.');
-      }
-
+      if (_client == 0)
+        throw test_package.TestFailure('Tried to use TestTextInput with no keyboard attached. You must use WidgetTester.showKeyboard() first.');
       final Completer<void> completer = Completer<void>();
-
-      _binaryMessenger.handlePlatformMessage(
+      TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger.handlePlatformMessage(
         SystemChannels.textInput.name,
         SystemChannels.textInput.codec.encodeMethodCall(
           MethodCall(
@@ -195,7 +208,6 @@ class TestTextInput {
           }
         },
       );
-
       return completer.future;
     });
   }
@@ -210,8 +222,8 @@ class TestTextInput {
     // Not using the `expect` function because in the case of a FlutterDriver
     // test this code does not run in a package:test test zone.
     if (_client == 0)
-      throw TestFailure('Tried to use TestTextInput with no keyboard attached. You must use WidgetTester.showKeyboard() first.');
-    _binaryMessenger.handlePlatformMessage(
+      throw test_package.TestFailure('Tried to use TestTextInput with no keyboard attached. You must use WidgetTester.showKeyboard() first.');
+    TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger.handlePlatformMessage(
       SystemChannels.textInput.name,
       SystemChannels.textInput.codec.encodeMethodCall(
         MethodCall(
