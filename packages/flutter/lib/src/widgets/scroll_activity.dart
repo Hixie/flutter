@@ -369,6 +369,7 @@ class ScrollDragController implements Drag {
   @override
   void update(DragUpdateDetails details) {
     assert(details.primaryDelta != null);
+    SchedulerBinding.instance!.requestFrameRate(FrameRate.fastest);
     _lastDetails = details;
     double offset = details.primaryDelta!;
     if (offset != 0.0) {
