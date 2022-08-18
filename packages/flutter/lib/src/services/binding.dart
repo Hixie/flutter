@@ -34,6 +34,7 @@ mixin ServicesBinding on BindingBase, SchedulerBinding {
   @override
   void initInstances() {
     super.initInstances();
+    assert(platformDispatcher.isRootIsolate, 'Bindings are only meaningful on the root isolate.');
     _instance = this;
     _defaultBinaryMessenger = createBinaryMessenger();
     _restorationManager = createRestorationManager();
@@ -81,6 +82,14 @@ mixin ServicesBinding on BindingBase, SchedulerBinding {
   /// messages in the same order in which they are sent.
   BinaryMessenger get defaultBinaryMessenger => _defaultBinaryMessenger;
   late final BinaryMessenger _defaultBinaryMessenger;
+
+  /// A token that represents the root isolate, used for coordinating with background
+  /// isolates.
+  ///
+  /// This property is primarily intended for use with
+  /// [BackgroundIsolateBinaryMessenger.ensureInitialized], which takes a
+  /// [RootIsolateToken] as its argument.
+  late RootIsolateToken rootIsolateToken = platformDispatcher.registerRootIsolate();
 
   /// The low level buffering and dispatch mechanism for messages sent by
   /// plugins on the engine side to their corresponding plugin code on

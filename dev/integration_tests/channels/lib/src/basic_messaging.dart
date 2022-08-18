@@ -83,14 +83,13 @@ Future<void> _basicBackgroundStandardEchoMain(List<Object> args) async {
   final SendPort sendPort = args[2] as SendPort;
   final Object message = args[1];
   final String name = 'Background Echo >${toString(message)}<';
-  const String description =
-      'Uses a platform channel from a background isolate.';
+  const String description = 'Uses a platform channel from a background isolate.';
   try {
-    BackgroundIsolateBinding.initializeBackgroundIsolate(
-        args[0] as BackgroundIsolateBinding);
-    const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+    BackgroundIsolateBinaryMessenger.ensureInitialized(args[0] as RootIsolateToken);
+    final BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
       'std-echo',
-      ExtendedStandardMessageCodec(),
+      const ExtendedStandardMessageCodec(),
+      binaryMessenger: BackgroundIsolateBinaryMessenger.instance,
     );
     final Object response = await channel.send(message) as Object;
 
@@ -105,9 +104,12 @@ Future<void> _basicBackgroundStandardEchoMain(List<Object> args) async {
 }
 
 Future<TestStepResult> basicBackgroundStandardEcho(Object message) async {
-  final BackgroundIsolateBinding binding = BackgroundIsolateBinding.initializeRootIsolate();
   final ReceivePort receivePort = ReceivePort();
-  Isolate.spawn(_basicBackgroundStandardEchoMain, <Object>[binding, message, receivePort.sendPort]);
+  Isolate.spawn(_basicBackgroundStandardEchoMain, <Object>[
+    ServicesBinding.instance.rootIsolateToken,
+    message,
+    receivePort.sendPort,
+  ]);
   return await receivePort.first as TestStepResult;
 }
 
